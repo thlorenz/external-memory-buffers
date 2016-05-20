@@ -1,0 +1,24 @@
+{
+  "name": "external-memory-buffers",
+  "version": "1.0.0",
+  "description": "Demos showing external memory allocated in Buffers.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thlorenz/external-memory-buffers"
+  },
+  "bugs": {
+    "url": "https://github.com/thlorenz/external-memory-buffers/issues"
+  },
+  "homepage": "https://github.com/thlorenz/external-memory-buffers",
+  "dependencies": {
+    "v8-profiler": "thlorenz/v8-profiler#external-memory-buffers",
+    "xhr": "~2.0.1"
+  },
+  "devDependencies": {
+    "browserify": "~10.2.3"
+  }
+}

@@ -1,0 +1,96 @@
+section.left {
+  position: absolute;
+  top: 50px;
+  left: 1%; 
+  width: 450px;
+  bottom: 0;
+}
+
+section.right {
+  position: absolute;
+  top: 55px;
+  left: 480px;
+  width: 60%;
+  bottom: 0;
+}
+
+.header {
+  color: rgb(236, 238, 237);
+  background: rgb(49, 49, 51);
+  width: 100%;
+  text-align: center;
+  padding: 1px 10px 1px 10px;
+}
+
+.header > h1 {
+  margin: 0;
+}
+
+.control-panel,
+.buffer-list,
+.buffer-details,
+.messages {
+  background: rgb(236, 238, 237);
+  border: solid rgb(49,49,51) 1px;
+  color: rgb(49, 49, 51);
+  padding: 5px;
+  margin: 5px;
+  overflow: scroll;
+  overflow-y: visible;
+}
+
+.control-panel {
+  width: 100%;
+  height: 55px;
+}
+
+.buffer-list {
+  height: 576px;
+  width: 100%;
+  font-size: 12px;
+}
+
+.buffer-details {
+  font-family: monospace;
+  overflow-wrap: break-word;
+  position: relative;
+  top: 0;
+  left: -4px;
+  width: 500px;
+  height: 610px;
+}
+
+.tabheaders {
+  width: 500px;
+  margin-left: 1px;
+}
+
+.tabheader {
+  display         : block;
+  float           : left;
+  padding         : 10px 15px;
+  background      : #aaa;
+  border          : 1px solid #777;
+  border-bottom   : none;
+  border-radius   : 4px 4px 0 0;
+  margin-right    : 1px;
+  text-decoration : none;
+  cursor          : pointer;
+  width: 50px;
+}
+
+.messages {
+  border: none;
+}
+
+.selectable {
+  cursor: pointer;
+}
+
+.selectable:hover {
+  background: antiquewhite;
+}
+
+.selected {
+  color: blue;
+}
