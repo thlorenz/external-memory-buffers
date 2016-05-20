@@ -1,7 +1,7 @@
-'use strict';
+'use strict'
 
-var crypto = require('crypto')
-var profiler = require('v8-profiler')
+const crypto = require('crypto')
+const profiler = require('v8-profiler')
 
 function hashBuffer(buf) {
   return crypto.createHash('md5')
@@ -18,14 +18,14 @@ function isNativeBuffer(node) {
 }
 
 function hasParent(node) {
-  return !!node.parent;
+  return !!node.parent
 }
 
-var go = module.exports = function inspectBuffers() {
-  var buffers = []
+module.exports = function inspectBuffers() {
+  const buffers = []
 
   // we need a snapshot to find our buffers
-  var snapshot = profiler.takeSnapshot();
+  const snapshot = profiler.takeSnapshot()
 
   // Filter all snapshot nodes.
   // `onBufferNode` is called for each match.
@@ -38,17 +38,16 @@ var go = module.exports = function inspectBuffers() {
   function onBufferNode(node) {
     // Avoid obvious things that aren't buffers but would still
     // match if they had the same name.
-    if (node.type !== 'Object') return;
+    if (node.type !== 'Object') return
 
     // Once we're pretty sure it's a buffer, we'll resolve the actual Buffer from the heap.
     // This is super expensive since the entire heap is traversed each time.
     // Even if the buffer is found early it will keep traversing.
-    // @see: https://github.com/nodesource/nsolid-node/blob/939278ac059b44439d41aab12bf552c8ae3c52d0/deps/v8/src/heap-profiler.cc#L185-185
-    var buf = profiler.getObjectByHeapObjectId(node.id);
+    let buf = profiler.getObjectByHeapObjectId(node.id)
 
     // Make sure we didn't get some Object named Buffer, i.e. `function Buffer() {}`.
-    if (!Buffer.isBuffer(buf)) { 
-      if (typeof buf === 'Uint8Array') buf = Buffer(buf)
+    if (!Buffer.isBuffer(buf)) {
+      if (Object.getPrototypeOf(buf) === Uint8Array.prototype) buf = new Buffer(buf)
       else return
     }
 
@@ -65,15 +64,15 @@ var go = module.exports = function inspectBuffers() {
     })
   }
 
-  var potentialSliceParents = buffers.filter(isBuffer);
+  const potentialSliceParents = buffers.filter(isBuffer)
 
   function attachParentId(currentNode) {
-    var node;
+    let node
     for (var i = 0; i < potentialSliceParents.length; i++) {
       node = potentialSliceParents[i]
       if (currentNode.parent === node.buf) {
         currentNode.parentId = node.id
-        return;
+        return
       }
     }
   }
@@ -85,8 +84,8 @@ var go = module.exports = function inspectBuffers() {
   buffers
     .filter(isNativeBuffer)
     .filter(hasParent)
-    .forEach(attachParentId);
+    .forEach(attachParentId)
 
   // Finally return all buffers collected inside the `onBufferNode` callback.
-  return buffers;
+  return buffers
 }

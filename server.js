@@ -1,55 +1,50 @@
-'use strict';
+'use strict'
 
-// profiler demo
+const PORT = 8000
+const fs = require('fs')
+const path = require('path')
+const http = require('http')
+const build = require('./build')
+const takeSnapshot = require('./take-snapshot')
+const produceBuffers = require('./buffer-producer')
+const inspectBuffers = require('./buffer-inspector')
 
-var PORT = 8000;
-var fs = require('fs');
-var path = require('path');
-var http = require('http');
-var build = require('./build');
-var produceBuffers = require('./buffer-producer');
-var inspectBuffers = require('./buffer-inspector');
+const producedBuffers = []
 
-var producedBuffers = [];
-
-var server = http.createServer();
+const server = http.createServer()
 
 server
   .on('request', onRequest)
   .on('listening', onListening)
-  .listen(PORT);
+  .listen(PORT)
 
-process.on('SIGTERM', onSIGTERM);
+process.on('SIGTERM', onSIGTERM)
 
 function onSIGTERM() {
-  console.error('Caught SIGTERM, shutting down.');
-  server.close();
-  process.exit(0);
+  console.error('Caught SIGTERM, shutting down.')
+  server.close()
+  process.exit(0)
 }
 
-console.error('pid', process.pid);
+console.error('pid', process.pid)
 
 function sendError(res, err) {
-  res.end(JSON.stringify({ error: err.message }));
+  res.end(JSON.stringify({ error: err.message }))
 }
 
-function serveIndex (res) {
-  res.writeHead(200, { 'Content-Type': 'text/html' });
-  fs.createReadStream(path.join(__dirname, 'index.html')).pipe(res);
+function serveIndex(res) {
+  res.writeHead(200, { 'Content-Type': 'text/html' })
+  fs.createReadStream(path.join(__dirname, 'index.html')).pipe(res)
 }
 
-function serveBundle (res) {
-  res.writeHead(200, { 'Content-Type': 'application/javascript' });
-  build().pipe(res);
+function serveBundle(res) {
+  res.writeHead(200, { 'Content-Type': 'application/javascript' })
+  build().pipe(res)
 }
 
-function serveCss (res) {
-  res.writeHead(200, { 'Content-Type': 'text/css' });
-  fs.createReadStream(path.join(__dirname, 'index.css')).pipe(res);
-}
-
-function inspect(obj, depth) {
-  console.error(require('util').inspect(obj, false, depth || 5, true));
+function serveCss(res) {
+  res.writeHead(200, { 'Content-Type': 'text/css' })
+  fs.createReadStream(path.join(__dirname, 'index.css')).pipe(res)
 }
 
 function buffersInfoToJSON(buffersInfo) {
@@ -65,46 +60,58 @@ function buffersInfoToJSON(buffersInfo) {
     }
   }
 
-  return JSON.stringify(buffersInfo.map(bufferInfoToJSON));
+  return JSON.stringify(buffersInfo.map(bufferInfoToJSON))
 }
 
 function serveProfileBuffers(res) {
-  var buffersInfo = inspectBuffers();
-  var json = JSON.stringify({ type: 'buffer-list', json: buffersInfoToJSON(buffersInfo) });
-  res.writeHead(200, { 'Content-Type': 'application/json', 'Content-Length': json.length });
-  res.end(json);
+  const buffersInfo = inspectBuffers()
+  const json = JSON.stringify({ type: 'buffer-list', json: buffersInfoToJSON(buffersInfo) })
+  res.writeHead(200, { 'Content-Type': 'application/json', 'Content-Length': json.length })
+  res.end(json)
 }
 
 function serveProduceBuffers(res) {
-  var bufs = produceBuffers(onProduced);
+  produceBuffers(onProduced)
   function onProduced(err, bufs) {
     if (err) {
-      console.error(err);
-      res.writeHead(500, { 'Content-Type': 'application/json', 'Content-Length': json.length });
-      return res.end(JSON.stringify({ type: 'message', msg: err.toString() }));
+      console.error(err)
+      res.writeHead(500, { 'Content-Type': 'application/json', 'Content-Length': json.length })
+      return res.end(JSON.stringify({ type: 'message', msg: err.toString() }))
     }
 
-    bufs.forEach(function addBuffer(buf) { producedBuffers.push(buf) });
-    var msg = 'Produced ' + bufs.length + ' more buffers. ' +
-              'Produced a total of ' + producedBuffers.length;
-    var json = JSON.stringify({ type: 'message', msg: msg });
-    res.writeHead(200, { 'Content-Type': 'application/json', 'Content-Length': json.length });
-    res.end(json);
+    bufs.forEach(function addBuffer(buf) { producedBuffers.push(buf) })
+    const msg = 'Produced ' + bufs.length + ' more buffers. ' +
+                'Produced a total of ' + producedBuffers.length
+    const json = JSON.stringify({ type: 'message', msg: msg })
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Content-Length': json.length })
+    res.end(json)
   }
 }
 
-/// Handle Requests
+function serveTakeSnapshot(res) {
+  takeSnapshot(function onsnapshotWritten(err) {
+    if (err) return sendError(res, err)
+    const msg = 'Took snapshot, please load via DevTools Profiler'
+    const json = JSON.stringify({ type: 'message', msg: msg })
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Content-Length': json.length })
+    res.end(json)
+  })
+}
+
+// Handle Requests
 function onRequest(req, res) {
-  console.error('%s %s', req.method, req.url);
+  console.error('%s %s', req.method, req.url)
 
-  if (req.url === '/') return serveIndex(res);
-  if (req.url === '/bundle.js') return serveBundle(res);
-  if (req.url === '/index.css') return serveCss(res);
+  if (req.url === '/') return serveIndex(res)
+  if (req.url === '/bundle.js') return serveBundle(res)
+  if (req.url === '/index.css') return serveCss(res)
 
-  if (req.url === '/profile_buffers') return serveProfileBuffers(res);
-  if (req.url === '/produce_buffers') return serveProduceBuffers(res);
+  if (req.url === '/profile_buffers') return serveProfileBuffers(res)
+  if (req.url === '/produce_buffers') return serveProduceBuffers(res)
+  if (req.url === '/take_snapshot') return serveTakeSnapshot(res)
+  sendError(res, new Error('Page not found ' + req.url))
 }
 
 function onListening() {
-  console.error('HTTP server listening on port', PORT);
+  console.error('HTTP server listening on http://localhost:%d', this.address().port)
 }

@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 var fs = require('fs')
 var path = require('path')
@@ -11,9 +11,10 @@ module.exports = function produceBuffers(cb) {
   var buf3 = fs.readFileSync(path.join(v8profilerdir, 'binding.gyp'))
   var buf4 = fs.readFileSync(path.join(v8profilerdir, 'readme.md'))
 
-  var slices = [];
-  for (var i = 0; i < 2000; i += 100)
-    slices.push(buf4.slice(i, i + 20));
+  var slices = []
+  for (var i = 0; i < 2000; i += 100) {
+    slices.push(buf4.slice(i, i + 20))
+  }
 
   build()
     .on('error', cb)
