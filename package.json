@@ -4,7 +4,8 @@
   "description": "Demos showing external memory allocated in Buffers.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "postinstall": "cd node_modules/v8-profiler && nave use v4.4  node-gyp rebuild",
+    "start": "nave use v4.4 node server.js"
   },
   "repository": {
     "type": "git",
@@ -18,5 +19,8 @@
     "browserify": "~13.0.1",
     "v8-profiler": "thlorenz/v8-profiler#external-memory-buffers",
     "xhr": "~2.2.0"
+  },
+  "devDependencies": {
+    "nave": "~1.0.1"
   }
 }
